@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>hi human</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f7f6f2; --ink:#2a2420; --muted:#8d8173; --inside:#211915;
+    --shell:none;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#9cc24a;color:var(--ink)}
+  body{font-family:"DM Sans",system-ui,sans-serif;font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+  /* ---------- intro ---------- */
+  #intro{position:fixed;inset:0;z-index:100;background-color:var(--bg);transition:opacity .9s ease,background-color 1.2s ease}
+  #intro.reveal{background-color:transparent}
+  #intro.gone{opacity:0;pointer-events:none}
+  #intro canvas{display:block;width:100%;height:100%}
+  #skip{position:absolute;right:22px;bottom:20px;font-size:13px;color:var(--muted);letter-spacing:.04em;padding:8px 10px}
+  #skip:hover{color:var(--ink)}
+
+  /* ---------- living wallpaper ---------- */
+  #bg,#bg-fallback{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+  #bg-fallback{background:#9cc24a url(art.webp) center/cover no-repeat;display:none}
+
+  /* ---------- eggshell surface ---------- */
+  .shell{
+    background-color:#f3eee4;
+    background-image:radial-gradient(130% 100% at 18% 8%,rgba(255,255,255,.55),rgba(255,255,255,0) 55%),var(--shell);
+    background-size:auto,900px 900px;
+    border-radius:3px;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.55),inset 0 -8px 18px rgba(150,118,86,.13),
+               0 1px 1px rgba(70,50,30,.18),0 12px 26px -12px rgba(40,30,10,.5);
+  }
+
+  /* ---------- site ---------- */
+  #site{position:relative;z-index:1;opacity:0;transition:opacity 1s ease .1s}
+  #site.ready{opacity:1}
+  .wrap{max-width:1240px;margin:0 auto;padding:0 32px}
+
+  nav{position:fixed;top:14px;left:0;right:0;z-index:20;pointer-events:none}
+  nav .wrap{display:flex;justify-content:space-between;align-items:center;font-size:14px}
+  nav .logo,nav ul{pointer-events:auto;padding:7px 14px}
+  nav .logo{font-family:Fredoka,sans-serif;font-size:17px;text-decoration:none}
+  nav ul{display:flex;gap:22px;list-style:none}
+  nav ul a{text-decoration:none}
+  nav ul a:hover{text-decoration:underline;text-underline-offset:3px}
+
+  .stage{height:100vh;display:flex;align-items:flex-end;justify-content:center;padding-bottom:28px}
+  .stage a{font-size:12px;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;padding:8px 16px;animation:bob 2.4s ease-in-out infinite}
+  @keyframes bob{50%{transform:translateY(-5px)}}
+
+  .hero{padding:60px 0 120px}
+  .hero .card-about{max-width:700px;padding:46px 46px 40px}
+  .hero h1{font-family:Fredoka,sans-serif;font-weight:600;font-size:clamp(52px,8vw,104px);line-height:.95;letter-spacing:-.02em;margin-bottom:28px}
+  .hero .bio p{font-size:clamp(16px,1.5vw,19px);color:#3a322b;margin-bottom:14px}
+  .hero .bio strong{color:var(--ink);font-weight:600}
+  .hero .links{display:flex;gap:10px;margin-top:28px;flex-wrap:wrap}
+  .hero .links a{font-size:14px;text-decoration:none;padding:8px 14px;border-radius:999px;border:1px solid rgba(90,70,50,.28);transition:background .2s,border-color .2s}
+  .hero .links a:hover{background:rgba(90,70,50,.08);border-color:rgba(90,70,50,.5)}
+  .hero .links a.primary{background:var(--ink);color:#f3eee4;border-color:var(--ink)}
+  .hero .links a.primary:hover{background:#000}
+
+  #work{padding:0 0 140px}
+  .sec-head{display:inline-flex;gap:10px;align-items:baseline;padding:8px 16px;margin-bottom:28px}
+  .sec-head h2{font-size:14px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+  .sec-head span{font-size:13px;color:var(--muted)}
+
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:34px 26px}
+  @media (max-width:960px){.grid{grid-template-columns:repeat(3,1fr)}}
+  @media (max-width:680px){.grid{grid-template-columns:repeat(2,1fr);gap:22px 14px}.wrap{padding:0 16px}nav ul{gap:14px}.hero .card-about{padding:28px 22px}}
+  .card{display:block;width:100%;text-align:left}
+  .thumb{aspect-ratio:1;width:100%;position:relative;transition:transform .4s cubic-bezier(.2,.8,.2,1),box-shadow .4s}
+  .thumb b{position:absolute;left:12px;top:9px;font-weight:500;font-size:12px;color:var(--muted)}
+  .card:hover .thumb{transform:translateY(-4px)}
+  .meta{display:flex;justify-content:space-between;gap:10px;margin-top:8px;padding:7px 12px;font-size:14px}
+  .meta .yr{color:var(--muted);font-variant-numeric:tabular-nums}
+
+  footer{padding:0 0 40px;font-size:13px}
+  footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  footer .wrap>*{padding:7px 14px}
+  footer button:hover{text-decoration:underline}
+
+  /* ---------- project open: the eggshell cracks and splits ---------- */
+  .crack-stage{position:fixed;z-index:61;pointer-events:none}
+  .crack-stage .half{position:absolute;inset:0;filter:drop-shadow(0 0 1px rgba(110,78,58,.65))}
+  .crack-stage svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+  .panel{position:fixed;inset:0;z-index:60;background:var(--inside)}
+  .detail{position:fixed;inset:0;z-index:70;overflow-y:auto;color:#f3eee4;opacity:0;transform:translateY(16px);transition:opacity .45s ease,transform .45s ease}
+  .detail.show{opacity:1;transform:none}
+  .detail .wrap{max-width:980px;padding-top:28px;padding-bottom:100px}
+  .d-top{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:rgba(243,238,228,.55);margin-bottom:40px}
+  .close{width:44px;height:44px;border-radius:50%;color:var(--ink);font-size:22px;line-height:44px;text-align:center;transition:transform .25s}
+  .close:hover{transform:rotate(90deg)}
+  .d-title{font-family:Fredoka,sans-serif;font-weight:600;font-size:clamp(44px,7vw,96px);line-height:1;letter-spacing:-.015em}
+  .d-year{font-size:16px;margin:14px 0 44px;color:rgba(243,238,228,.55)}
+  .d-cover{aspect-ratio:16/9;background:rgba(243,238,228,.07);display:flex;align-items:center;justify-content:center;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:rgba(243,238,228,.4);margin-bottom:48px}
+  .d-body{display:grid;grid-template-columns:200px 1fr;gap:40px}
+  @media (max-width:680px){.d-body{grid-template-columns:1fr;gap:24px}}
+  .d-facts dt{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(243,238,228,.45)}
+  .d-facts dd{margin:2px 0 18px;font-size:15px}
+  .d-text p{font-size:18px;margin-bottom:18px;max-width:620px;color:rgba(243,238,228,.88)}
+  .d-text a.btn{display:inline-block;margin-top:10px;padding:12px 20px;color:var(--ink);text-decoration:none;font-size:14px;border-radius:999px}
+</style>
+</head>
+<body>
+
+<div id="intro">
+  <canvas id="cv"></canvas>
+  <button id="skip">skip →</button>
+</div>
+
+<canvas id="bg"></canvas>
+<div id="bg-fallback"></div>
+
+<div id="site">
+  <nav><div class="wrap">
+    <a class="logo shell" href="#home">hi human</a>
+    <ul class="shell">
+      <li><a href="#about">About</a></li>
+      <li><a href="#work">Projects</a></li>
+      <li><a href="https://github.com/xiangxunhanyuki-ui" target="_blank" rel="noopener">GitHub ↗</a></li>
+    </ul>
+  </div></nav>
+
+  <section class="stage" id="home"><a class="shell" href="#about">scroll ↓</a></section>
+
+  <!-- ======================= ABOUT — edit your text here ======================= -->
+  <section class="hero" id="about"><div class="wrap"><div class="card-about shell">
+    <h1>hi, human.</h1>
+    <div class="bio">
+      <p>I'm <strong>Your Name</strong>. Write a few sentences about yourself here — what you make, what you care about, where you're based.</p>
+      <p>A second paragraph if you want: background, what you're looking for, or what you're working on right now.</p>
+    </div>
+    <div class="links">
+      <a class="primary" href="cv.pdf" download>Download CV ↓</a>
+      <a href="https://www.linkedin.com/in/your-name" target="_blank" rel="noopener">LinkedIn ↗</a>
+      <a href="https://github.com/xiangxunhanyuki-ui" target="_blank" rel="noopener">GitHub ↗</a>
+      <a href="mailto:you@example.com">you@example.com</a>
+    </div>
+  </div></div></section>
+
+  <section id="work"><div class="wrap">
+    <div class="sec-head shell"><h2>Projects</h2><span id="count"></span></div>
+    <div class="grid" id="grid"></div>
+  </div></section>
+
+  <footer><div class="wrap">
+    <span class="shell">© <span id="yr"></span> Your Name</span>
+    <button id="replay" class="shell">replay the trees 🌳</button>
+  </div></footer>
+</div>
+
+<script>
+/* ==========================================================
+   EDIT YOUR PROJECTS HERE
+   ========================================================== */
+const PROJECTS = [
+  {title:"Project One",   year:2026, role:"Design & Code", stack:"HTML, CSS, JS", link:"https://github.com/xiangxunhanyuki-ui",
+   desc:["A short paragraph about what this project is and why you made it.","Another paragraph about how it works, what you learned, or what's interesting about it."]},
+  {title:"Project Two",   year:2026},
+  {title:"Project Three", year:2025},
+  {title:"Project Four",  year:2025},
+  {title:"Project Five",  year:2025},
+  {title:"Project Six",   year:2024},
+  {title:"Project Seven", year:2024},
+  {title:"Project Eight", year:2024},
+  {title:"Project Nine",  year:2023},
+  {title:"Project Ten",   year:2023},
+  {title:"Project Eleven",year:2023},
+  {title:"Project Twelve",year:2022},
+];
+
+const rand = (a,b)=>a+Math.random()*(b-a);
+const easeInOut = t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+const sleep = ms=>new Promise(r=>setTimeout(r,ms));
+
+/* ==========================================================
+   EGGSHELL TEXTURE — generated once: mottled off-white, grain, speckles, faint veins
+   ========================================================== */
+function makeShellTexture(){
+  const S=900, c=document.createElement('canvas'); c.width=c.height=S;
+  const x=c.getContext('2d');
+  x.fillStyle='#f3eee4'; x.fillRect(0,0,S,S);
+  // soft mottling
+  for(let i=0;i<90;i++){
+    const r=rand(40,200), cx=rand(-50,S+50), cy=rand(-50,S+50);
+    const tone = Math.random()<.55 ? '212,192,166' : '255,253,248';
+    const g=x.createRadialGradient(cx,cy,0,cx,cy,r);
+    g.addColorStop(0,`rgba(${tone},${rand(.06,.2)})`); g.addColorStop(1,`rgba(${tone},0)`);
+    x.fillStyle=g; x.fillRect(cx-r,cy-r,r*2,r*2);
+  }
+  // faint branching veins
+  x.lineCap='round'; x.lineJoin='round'; x.filter='blur(0.6px)';
+  const stack=[];
+  for(let i=0;i<9;i++) stack.push([rand(0,S),rand(0,S),rand(0,Math.PI*2),rand(60,140),rand(1,1.8),0]);
+  while(stack.length){
+    let [px,py,ang,len,w,depth]=stack.pop();
+    x.beginPath(); x.moveTo(px,py);
+    for(let i=0;i<len;i++){
+      ang+=rand(-.32,.32); px+=Math.cos(ang)*4; py+=Math.sin(ang)*4; x.lineTo(px,py);
+      if(depth<3 && Math.random()<.035) stack.push([px,py,ang+rand(-1.1,1.1),len*.55|0,w*.62,depth+1]);
+    }
+    x.strokeStyle=`rgba(178,86,80,${.16-depth*.035})`; x.lineWidth=w; x.stroke();
+  }
+  x.filter='none';
+  // speckles
+  for(let i=0;i<2200;i++){
+    x.fillStyle=`rgba(${rand(110,150)|0},${rand(85,110)|0},${rand(60,80)|0},${rand(.04,.22)})`;
+    x.beginPath(); x.arc(rand(0,S),rand(0,S),rand(.3,1.3),0,7); x.fill();
+  }
+  // fine grain
+  const d=x.getImageData(0,0,S,S), a=d.data;
+  for(let i=0;i<a.length;i+=4){ const n=(Math.random()-.5)*14; a[i]+=n; a[i+1]+=n; a[i+2]+=n; }
+  x.putImageData(d,0,0);
+  return c.toDataURL('image/jpeg',.88);
+}
+document.documentElement.style.setProperty('--shell',`url(${makeShellTexture()})`);
+const shellPos = el=>{ const p=`0 0, ${-rand(0,700)|0}px ${-rand(0,700)|0}px`; el.style.backgroundPosition=p; return p; };
+document.querySelectorAll('.shell').forEach(shellPos);
+
+/* ==========================================================
+   INTRO: trees fall into a pyramid → shake → burst; the shards fall flat onto the ground,
+   the camera swings round to look down at them, shakes, loose shards drop away → "hi human"
+   ========================================================== */
+const intro = document.getElementById('intro');
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const TREE = '🌳';
+const EMOJI_FONT = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+let W, H, DPR, raf, introRunning = false;
+
+function sizeCanvas(){
+  DPR = Math.min(window.devicePixelRatio||1, 2);
+  W = innerWidth; H = innerHeight;
+  cv.width = W*DPR; cv.height = H*DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+
+function buildPyramid(){
+  const size = Math.max(20, Math.min(W, H*1.4)/26);
+  const sp = size*0.9;
+  const base = Math.max(8, Math.min(15, Math.floor(W*0.62/sp)));
+  const floorY = H*0.82, cx = W/2;
+  const trees = [];
+  for(let r=0;r<base;r++){
+    const count = base-r; let start=0, end=count;
+    if(r>0 && count>2){ if(Math.random()<.3) start++; if(Math.random()<.3) end--; }
+    for(let i=start;i<end;i++){
+      const tx = cx + (i-(count-1)/2)*sp + rand(-.2,.2)*sp;
+      const ty = floorY - size*.5 - r*sp*0.8 + rand(-.08,.08)*sp;
+      trees.push({ tx, ty, trot:rand(-.28,.28), x:tx+rand(-60,60), y:-size-rand(0,H*.25),
+        rot:rand(-1.2,1.2), vy:0, squash:0, start:r*210+rand(0,420), state:'wait' });
+    }
+  }
+  return {trees,size,floorY};
+}
+
+function sample(drawFn, gap){
+  const c=document.createElement('canvas'); c.width=W; c.height=H;
+  const x=c.getContext('2d'); drawFn(x);
+  const d=x.getImageData(0,0,W,H).data, pts=[];
+  for(let y=0;y<H;y+=gap) for(let xx=0;xx<W;xx+=gap){
+    const k=(y*W+xx)*4;
+    if(d[k+3]>140) pts.push({x:xx,y,c:`rgb(${d[k]},${d[k+1]},${d[k+2]})`});
+  }
+  return pts;
+}
+
+function runIntro(){
+  introRunning = true;
+  intro.classList.remove('gone','reveal'); intro.style.display='';
+  document.documentElement.style.overflow='hidden';
+  sizeCanvas();
+  const {trees,size,floorY} = buildPyramid();
+  const G = H*2.4;
+  const D = Math.max(W,H)*1.6;            // camera distance (= focal length, so z=0 is 1:1)
+  let phase='fall', t0=performance.now(), last=t0, mark=0, parts=[];
+  let phi=0, Hc=floorY, shakeAmt=0;       // camera pitch (0 = front, π/2 = looking down), screen centre y
+
+  const project=(X,Y,Z)=>{
+    const sp=Math.sin(phi), cp=Math.cos(phi);
+    const yc=Y*cp - Z*sp, zc=D-(Y*sp + Z*cp), s=D/Math.max(zc,1);
+    return [W/2 + X*s, Hc - yc*s, s];
+  };
+
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+
+  const drawTree=(t,ox=0,oy=0,orot=0)=>{
+    ctx.save(); ctx.translate(t.x+ox,t.y+oy); ctx.rotate(t.rot+orot);
+    ctx.scale(1+.14*t.squash,1-.2*t.squash); ctx.fillText(TREE,0,0); ctx.restore();
+  };
+
+  function burst(){
+    phase='burst'; mark=performance.now();
+    const gap = Math.max(3, Math.round(size/7));
+    const src = sample(x=>{
+      x.textAlign='center'; x.textBaseline='middle'; x.font=`${size}px ${EMOJI_FONT}`;
+      trees.forEach(t=>{x.save();x.translate(t.x,t.y);x.rotate(t.rot);x.fillText(TREE,0,0);x.restore();});
+    }, gap);
+    const fs = Math.min(W*0.16, H*0.24, 220);
+    const tgt = sample(x=>{
+      x.textAlign='center'; x.textBaseline='middle';
+      x.font=`600 ${fs}px Fredoka, "Arial Rounded MT Bold", sans-serif`;
+      x.fillStyle='#000'; x.fillText('hi human', W/2, H/2);
+    }, gap);
+    for(let i=src.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[src[i],src[j]]=[src[j],src[i]];}
+    const n = Math.max(src.length, tgt.length);
+    parts = [];
+    for(let i=0;i<n;i++){
+      const s = src[i%src.length], isText = i<tgt.length;
+      const X0=s.x-W/2, Y0=floorY-s.y;
+      // where it lands on the ground (X, Z): text letters, or scattered debris around them
+      let gx, gz;
+      if(isText){ gx=tgt[i].x-W/2; gz=tgt[i].y-H/2; }
+      else { const a=rand(0,Math.PI*2), r=Math.sqrt(Math.random()); gx=Math.cos(a)*r*W*.48; gz=Math.sin(a)*r*H*.42; }
+      parts.push({ X0, Y0, Z0:0,
+        cX: X0+rand(-1,1)*size*3, cY: Y0+rand(size*2,size*7), cZ: rand(-260,260),
+        gx, gz, X:X0, Y:Y0, Z:0, isText, c:s.c, sz:gap,
+        d:rand(0,300), dur:rand(1300,1800), spin:rand(-2.5,2.5),
+        vz:0, vy:0, a:1, drop:rand(0,600) });
+    }
+  }
+
+  function frame(now){
+    const dt=Math.min(.033,(now-last)/1000); last=now;
+    const el=now-t0;
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    ctx.clearRect(0,0,W,H);
+
+    if(phase==='fall'||phase==='settle'||phase==='shake'){
+      ctx.font=`${size}px ${EMOJI_FONT}`;
+      let done=true, sh=0;
+      if(phase==='shake'){ const p=Math.min(1,(now-mark)/1300); sh=Math.pow(p,1.6); if(p>=1) burst(); }
+      for(const t of trees){
+        if(t.state==='wait'){ if(el>=t.start) t.state='fall'; else {done=false; continue;} }
+        if(t.state==='fall'){
+          done=false;
+          t.vy+=G*dt; t.y+=t.vy*dt;
+          t.x+=(t.tx-t.x)*Math.min(1,dt*4); t.rot+=(t.trot-t.rot)*Math.min(1,dt*5);
+          if(t.y>=t.ty){ t.y=t.ty; if(t.vy>H*.25){t.vy=-t.vy*.28;t.squash=1;} else {t.vy=0;t.state='rest';} }
+        } else if(t.state==='rest'){
+          t.x+=(t.tx-t.x)*Math.min(1,dt*8); t.rot+=(t.trot-t.rot)*Math.min(1,dt*8);
+        }
+        t.squash*=Math.exp(-dt*9);
+        if(phase==='shake'){ const k=now/1000;
+          drawTree(t,Math.sin(k*55+t.tx)*size*.13*sh,Math.cos(k*47+t.ty)*size*.07*sh,Math.sin(k*40+t.tx*.3)*.22*sh);
+        } else drawTree(t);
+      }
+      if(phase==='fall'&&done){ phase='settle'; setTimeout(()=>{phase='shake';mark=performance.now();},350); }
+    }
+
+    if(phase!=='fall'&&phase!=='settle'&&phase!=='shake'){
+      const st=now-mark;
+      // camera choreography
+      if(phase==='burst'){
+        phi=0.16*Math.min(1,st/1600);            // tilt down a little so you see them land on the floor
+        if(parts.every(p=>st>p.d+p.dur)){ phase='lie'; mark=now; }
+      } else if(phase==='lie'){
+        if(st>450){ phase='swing'; mark=now; }
+      } else if(phase==='swing'){
+        const k=Math.min(1,st/750), e=easeInOut(k);
+        phi=0.16+(Math.PI/2-0.16)*e*(1+0.06*Math.sin(Math.PI*k));   // slight overshoot as it lands
+        Hc=floorY+(H/2-floorY)*e;
+        if(k>=1){ phi=Math.PI/2; Hc=H/2; phase='shake2'; mark=now; }
+      } else if(phase==='shake2'){
+        shakeAmt=Math.max(0,1-st/900);
+        if(st>1500){ shakeAmt=0; phase='hold'; mark=now; intro.classList.add('reveal'); setTimeout(endIntro,2200); }
+      }
+
+      for(const p of parts){
+        let fl=1;
+        if(phase==='burst'){
+          let t=(st-p.d)/p.dur; t=Math.max(0,Math.min(1,t));
+          const e=t*t*(3-2*t), u=1-e;
+          p.X=u*u*p.X0+2*u*e*p.cX+e*e*p.gx;
+          p.Y=u*u*p.Y0+2*u*e*p.cY;
+          p.Z=2*u*e*p.cZ+e*e*p.gz;
+          // shard turns from upright to lying flat, tumbling on the way
+          const alpha=e*Math.PI/2+p.spin*Math.sin(Math.PI*t);
+          fl=Math.abs(Math.cos(alpha-phi));
+        } else {
+          p.X=p.gx; p.Z=p.gz; if(p.Y>0) p.Y=0;
+          fl=Math.max(Math.abs(Math.sin(phi)),.06);
+          // loose debris drops away once the camera has landed
+          if(!p.isText && (phase==='shake2'||phase==='hold') && now-mark>p.drop*(phase==='hold'?0:1)){
+            p.vz+=H*1.6*dt; p.gz+=p.vz*dt; p.vy-=H*0.9*dt; p.Y+=p.vy*dt; p.a-=dt*1.2;
+          }
+        }
+        if(p.a<=0) continue;
+        const [sx,sy,s]=project(p.X,p.Y,p.Z);
+        const w=p.sz*s, h=Math.max(.6,p.sz*s*fl);
+        const jx=shakeAmt*Math.sin(now*.09+p.gx)*6, jy=shakeAmt*Math.cos(now*.08+p.gz)*5;
+        ctx.globalAlpha=Math.max(0,Math.min(1,p.a));
+        ctx.fillStyle=p.c; ctx.fillRect(sx-w/2+jx, sy-h/2+jy, w, h);
+      }
+      ctx.globalAlpha=1;
+
+      if(phase==='hold'){ // cream "sticker" outline so the letters read on top of the artwork
+        const a=Math.min(1,(now-mark)/700), g=parts[0]?parts[0].sz:4, pad=g*1.1;
+        ctx.globalCompositeOperation='destination-over';
+        ctx.fillStyle=`rgba(243,238,228,${a})`;
+        for(const p of parts) if(p.isText) ctx.fillRect(p.gx+W/2-g/2-pad,p.gz+H/2-g/2-pad,g+pad*2,g+pad*2);
+        ctx.globalCompositeOperation='source-over';
+      }
+    }
+    if(introRunning) raf=requestAnimationFrame(frame);
+  }
+  raf=requestAnimationFrame(frame);
+}
+
+function endIntro(){
+  if(!introRunning) return;
+  introRunning=false;
+  intro.classList.add('gone');
+  document.getElementById('site').classList.add('ready');
+  document.documentElement.style.overflow='';
+  setTimeout(()=>{ cancelAnimationFrame(raf); if(!introRunning) intro.style.display='none'; },950);
+}
+document.getElementById('skip').onclick=endIntro;
+addEventListener('resize',()=>{ if(introRunning) endIntro(); });
+document.getElementById('replay').onclick=()=>{ scrollTo(0,0); document.getElementById('site').classList.remove('ready'); setTimeout(runIntro,400); };
+
+/* ==========================================================
+   GALLERY
+   ========================================================== */
+const grid=document.getElementById('grid');
+document.getElementById('count').textContent=`(${PROJECTS.length})`;
+document.getElementById('yr').textContent=new Date().getFullYear();
+PROJECTS.forEach((p,i)=>{
+  const b=document.createElement('button');
+  b.className='card';
+  b.innerHTML=`<div class="thumb shell"><b>${String(i+1).padStart(2,'0')}</b></div>
+    <div class="meta shell"><span>${p.title}</span><span class="yr">${p.year}</span></div>`;
+  b.querySelectorAll('.shell').forEach(shellPos);
+  b.onclick=()=>openProject(b,p);
+  grid.appendChild(b);
+});
+
+/* ---------- open: a hairline crack runs across the shell, it splits apart, the dark inside opens up ---------- */
+let current=null;
+
+function makeCrack(){
+  const vertical=Math.random()<.6, n=9;
+  const a=rand(25,75), b=rand(25,75), pts=[];
+  for(let i=0;i<=n;i++){
+    const t=i/n, along=t*100;
+    const across=a+(b-a)*t+(i>0&&i<n?rand(-7,7):0);
+    pts.push(vertical?[across,along]:[along,across]);
+  }
+  // little hairline branches off the main crack
+  const branches=[];
+  for(let i=1;i<n;i++) if(Math.random()<.55){
+    const [x,y]=pts[i]; let ang=rand(0,Math.PI*2), px=x, py=y; const br=[[px,py]];
+    for(let k=0;k<3;k++){ ang+=rand(-.6,.6); px+=Math.cos(ang)*rand(3,7); py+=Math.sin(ang)*rand(3,7); br.push([px,py]); }
+    branches.push(br);
+  }
+  const P=arr=>'polygon('+arr.map(([x,y])=>`${x}% ${y}%`).join(',')+')';
+  const halfA=vertical?[[0,0],...pts,[0,100]]:[[0,0],...pts,[100,0]];
+  const halfB=vertical?[[100,0],...pts,[100,100]]:[[0,100],...pts,[100,100]];
+  return {pts,branches,clipA:P(halfA),clipB:P(halfB),dirA:vertical?[-1,0]:[0,-1],dirB:vertical?[1,0]:[0,1]};
+}
+
+async function openProject(card,p){
+  if(current) return;
+  const thumb=card.querySelector('.thumb');
+  const r=thumb.getBoundingClientRect(), vw=innerWidth, vh=innerHeight;
+  document.documentElement.style.overflow='hidden';
+  const rect=rr=>`inset(${rr.top}px ${vw-rr.right}px ${vh-rr.bottom}px ${rr.left}px)`;
+
+  const panel=document.createElement('div');
+  panel.className='panel'; panel.style.clipPath=rect(r);
+  document.body.appendChild(panel);
+
+  const stage=document.createElement('div');
+  stage.className='crack-stage';
+  Object.assign(stage.style,{left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px'});
+  const c=makeCrack();
+  const mkHalf=clip=>{ const h=document.createElement('div'); const inner=document.createElement('div');
+    inner.className='shell'; inner.style.cssText=`position:absolute;inset:0;clip-path:${clip};background-position:${thumb.style.backgroundPosition}`;
+    h.className='half'; h.appendChild(inner); return h; };
+  const A=mkHalf(c.clipA), B=mkHalf(c.clipB);
+  const line=pts=>pts.map(q=>q.join(',')).join(' ');
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('viewBox','0 0 100 100'); svg.setAttribute('preserveAspectRatio','none');
+  svg.innerHTML=`<polyline class="main" points="${line(c.pts)}" fill="none" stroke="rgba(92,64,50,.8)" vector-effect="non-scaling-stroke" style="stroke-width:1.2px" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>`
+    + c.branches.map(br=>`<polyline class="br" points="${line(br)}" fill="none" stroke="rgba(110,80,62,.5)" vector-effect="non-scaling-stroke" style="stroke-width:.8px;opacity:0"/>`).join('');
+  stage.append(A,B,svg); document.body.appendChild(stage);
+  thumb.style.visibility='hidden';
+  current={panel,stage,thumb,c,A,B};
+
+  // 1. hairline crack runs across, little branches appear, a tiny shudder
+  stage.animate([{transform:'translate(0,0)'},{transform:'translate(-1.5px,1px)'},{transform:'translate(1.5px,-1px)'},{transform:'translate(-1px,0)'},{transform:'translate(0,0)'}],{duration:340});
+  svg.querySelector('.main').animate([{strokeDashoffset:1},{strokeDashoffset:0}],{duration:340,easing:'cubic-bezier(.6,0,.4,1)',fill:'forwards'});
+  svg.querySelectorAll('.br').forEach((b,i)=>b.animate([{opacity:0},{opacity:1}],{duration:160,delay:120+i*40,fill:'forwards'}));
+  await sleep(420);
+
+  // 2. halves pull apart, showing the dark inside
+  svg.style.transition='opacity .2s'; svg.style.opacity=0;
+  const gap=r.width*.16;
+  const pull=(el,d,rot)=>el.animate([{transform:'none'},{transform:`translate(${d[0]*gap}px,${d[1]*gap}px) rotate(${rot}deg)`}],{duration:520,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'});
+  pull(A,c.dirA,-4); pull(B,c.dirB,4);
+  await sleep(430);
+
+  // 3. halves fall away while the inside grows to fill the screen
+  const fly=(el,d,rot)=>el.animate([{transform:`translate(${d[0]*gap}px,${d[1]*gap}px) rotate(${rot}deg)`,opacity:1},
+    {transform:`translate(${d[0]*vw*.7}px,${d[1]*vh*.7}px) rotate(${rot*4}deg)`,opacity:0}],{duration:650,easing:'cubic-bezier(.6,0,.4,1)',fill:'forwards'});
+  fly(A,c.dirA,-4); fly(B,c.dirB,4);
+  const grow=panel.animate([{clipPath:rect(r)},{clipPath:'inset(0px 0px 0px 0px)'}],{duration:700,easing:'cubic-bezier(.75,0,.2,1)',fill:'forwards'});
+  await grow.finished;
+  panel.style.clipPath='inset(0px 0px 0px 0px)';
+  stage.style.visibility='hidden';
+  showDetail(p);
+}
+
+function showDetail(p){
+  const d=document.createElement('div');
+  d.className='detail'; d.setAttribute('role','dialog'); d.setAttribute('aria-label',p.title);
+  const desc=(p.desc||["Project description goes here. What is it, why did you make it, and what's interesting about it?","Add process notes, images, or links. Edit the PROJECTS list at the top of the script."]).map(t=>`<p>${t}</p>`).join('');
+  d.innerHTML=`<div class="wrap">
+    <div class="d-top"><span>Project ${String(PROJECTS.indexOf(p)+1).padStart(2,'0')} / ${String(PROJECTS.length).padStart(2,'0')}</span><button class="close shell" aria-label="Close">×</button></div>
+    <h1 class="d-title">${p.title}</h1>
+    <p class="d-year">${p.year}</p>
+    <div class="d-cover">cover image placeholder</div>
+    <div class="d-body">
+      <dl class="d-facts"><dt>Year</dt><dd>${p.year}</dd><dt>Role</dt><dd>${p.role||'—'}</dd><dt>Stack</dt><dd>${p.stack||'—'}</dd></dl>
+      <div class="d-text">${desc}${p.link?`<a class="btn shell" href="${p.link}" target="_blank" rel="noopener">View on GitHub ↗</a>`:''}</div>
+    </div></div>`;
+  d.querySelectorAll('.shell').forEach(shellPos);
+  document.body.appendChild(d);
+  requestAnimationFrame(()=>d.classList.add('show'));
+  d.querySelector('.close').onclick=closeProject;
+  d.querySelector('.close').focus();
+  current.detail=d;
+}
+
+async function closeProject(){
+  if(!current||!current.detail) return;
+  const {panel,stage,thumb,detail,c,A,B}=current;
+  current.detail=null;
+  detail.classList.remove('show');
+  await sleep(280); detail.remove();
+  const r=thumb.getBoundingClientRect(), vw=innerWidth, vh=innerHeight, gap=r.width*.16;
+  stage.style.visibility='visible';
+  panel.animate([{clipPath:'inset(0px 0px 0px 0px)'},{clipPath:`inset(${r.top}px ${vw-r.right}px ${vh-r.bottom}px ${r.left}px)`}],{duration:620,easing:'cubic-bezier(.75,0,.2,1)',fill:'forwards'});
+  const back=(el,d,rot)=>el.animate([{transform:`translate(${d[0]*vw*.7}px,${d[1]*vh*.7}px) rotate(${rot*4}deg)`,opacity:0},
+    {transform:`translate(${d[0]*gap}px,${d[1]*gap}px) rotate(${rot}deg)`,opacity:1,offset:.75},{transform:'none',opacity:1}],{duration:760,easing:'cubic-bezier(.3,0,.2,1)',fill:'forwards'});
+  back(A,c.dirA,-4); await back(B,c.dirB,4).finished;
+  thumb.style.visibility='';
+  stage.remove(); panel.remove();
+  document.documentElement.style.overflow='';
+  current=null;
+}
+addEventListener('keydown',e=>{ if(e.key==='Escape') closeProject(); });
+
+/* ==========================================================
+   LIVING WALLPAPER (WebGL): moths flap, nucleus lamps sway, bubble hills glow and surge
+   All coordinates are pixels in the original 2732×2048 artwork.
+   ========================================================== */
+const ART={ src:'art.webp', w:2732, h:2048,
+  // nucleus "street lamps": cx, cy, radius, phase
+  pods:[[342,233,103,0],[42,267,50,1.3],[117,408,67,2.1],[325,425,75,.6],[608,467,67,2.8],[700,475,45,1.9],
+        [692,583,55,3.6],[1050,500,70,.9],[933,92,42,4.2],[1025,108,42,2.4],[1217,67,47,5.1],[1250,767,42,3.1],[1192,933,47,1.6]],
+};
+const FRAG=`#version 300 es
+precision highp float;
+uniform sampler2D tex; uniform vec2 res, isz; uniform float t;
+uniform vec4 pods[13];
+out vec4 o;
+float box(vec2 p, vec4 b, float s){
+  vec2 a=smoothstep(b.xy-s,b.xy+s,p)*(1.0-smoothstep(b.zw-s,b.zw+s,p)); return a.x*a.y;
+}
+vec3 tx(vec2 p){ return texture(tex,p/isz).rgb; }
+mat2 rot(float a){ float c=cos(a), s=sin(a); return mat2(c,s,-s,c); }
+// beige / brown / white-ish moth colours (not the yellow path, not the greens)
+float mothness(vec3 c){
+  float pale = smoothstep(0.57,0.66,c.b/max(c.r,.01)) * smoothstep(-0.04,0.0,c.r-c.g);
+  float brown = smoothstep(0.13,0.2,c.r-c.g) * step(c.b,c.r);
+  return max(pale,brown);
+}
+float bubbly(vec3 c){ return smoothstep(0.42,0.62,c.b)*smoothstep(-0.25,-0.05,(c.b+c.r)*0.5-c.g); }
+
+vec3 moth(vec3 base, vec2 p, vec2 a, vec2 dir, float k, float region){
+  if(region<0.001) return base;
+  vec2 n=vec2(-dir.y,dir.x);
+  vec2 q=p-n*dot(p-a,n)*k;               // stretch wings away from the body axis
+  vec3 c=tx(q);
+  float m=mothness(c)*region;
+  c*=1.0-0.35*k;                           // a touch of shade as the wing lifts
+  return mix(base,c,m);
+}
+void main(){
+  vec2 fc=vec2(gl_FragCoord.x,res.y-gl_FragCoord.y);
+  float s=max(res.x/isz.x,res.y/isz.y);
+  vec2 p=(fc-(res-isz*s)*0.5)/s;
+
+  // nucleus lamps sway like pendulums hanging from their stems
+  for(int i=0;i<13;i++){
+    vec4 L=pods[i];
+    float d=length(p-L.xy);
+    float w=1.0-smoothstep(L.z*1.0,L.z*1.9,d);
+    if(w>0.0){
+      vec2 pv=L.xy+vec2(0.0,-2.2*L.z);
+      float ang=0.055*sin(t*0.85+L.w)*w;
+      p=pv+rot(-ang)*(p-pv);
+    }
+  }
+  vec3 c=tx(p);
+
+  // moths: slow, gentle wing beats
+  float kA=0.045*(0.5-0.5*cos(t*1.85));
+  float kB=0.05*(0.5-0.5*cos(t*1.6+1.7));
+  float rA=box(p,vec4(1420.,0.,2760.,1600.),60.)*(1.0-box(p,vec4(2420.,200.,2760.,360.),15.))*(1.0-box(p,vec4(1800.,830.,1900.,960.),12.)); // keep the little person still
+  float rB=box(p,vec4(-40.,1060.,800.,1840.),60.)*(1.0-box(p,vec4(400.,1160.,920.,1330.),15.));
+  c=moth(c,p,vec2(2200.,810.),normalize(vec2(270.,-350.)),kA,rA);
+  c=moth(c,p,vec2(140.,1170.),normalize(vec2(-60.,100.)),kB,rB);
+
+  // bubble hills: slow upward surging + inner glow
+  float R=max(box(p,vec4(1360.,700.,2300.,1590.),40.),box(p,vec4(800.,1680.,1120.,2060.),40.));
+  if(R>0.0){
+    vec2 q=p+vec2(4.0*sin(p.y*0.02+t*1.1), 7.0*sin(p.y*0.016+t*1.4)+3.0*sin(p.x*0.03-t*0.7));
+    vec3 cq=tx(q);
+    float mb=max(bubbly(c),bubbly(cq))*R;
+    c=mix(c,cq,mb);
+    float wave=0.55+0.45*sin(p.y*0.011+t*1.2+p.x*0.002);
+    float breath=0.75+0.25*sin(t*0.55);
+    c+=mb*wave*breath*vec3(0.17,0.22,0.24);
+    float halo=bubbly(textureLod(tex,p/isz,5.0).rgb)*R;
+    c+=halo*breath*0.10*vec3(0.75,1.0,0.95);
+  }
+  o=vec4(c,1.0);
+}`;
+
+function startWallpaper(){
+  const canvas=document.getElementById('bg');
+  const fallback=()=>{ canvas.style.display='none'; document.getElementById('bg-fallback').style.display='block'; };
+  const gl=canvas.getContext('webgl2',{antialias:false});
+  if(!gl) return fallback();
+  const sh=(type,src)=>{const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);
+    if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) throw gl.getShaderInfoLog(s); return s;};
+  let prog;
+  try{
+    prog=gl.createProgram();
+    gl.attachShader(prog,sh(gl.VERTEX_SHADER,`#version 300 es
+      in vec2 a; void main(){ gl_Position=vec4(a,0.,1.); }`));
+    gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,FRAG));
+    gl.linkProgram(prog); gl.useProgram(prog);
+  }catch(e){ console.warn(e); return fallback(); }
+  const buf=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+  const loc=gl.getAttribLocation(prog,'a'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+  const U={}; ['res','isz','t','pods'].forEach(n=>U[n]=gl.getUniformLocation(prog,n));
+  gl.uniform2f(U.isz,ART.w,ART.h);
+  gl.uniform4fv(U.pods,new Float32Array(ART.pods.flat()));
+
+  const img=new Image();
+  img.onload=()=>{
+    try{
+      const tex=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,tex);
+      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,img);
+      gl.generateMipmap(gl.TEXTURE_2D);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+    }catch(e){ console.warn(e); return fallback(); }   // e.g. opened from file:// — use a web server
+    requestAnimationFrame(loop);
+  };
+  img.onerror=fallback;
+  img.src=ART.src;
+
+  const resize=()=>{ const d=Math.min(devicePixelRatio||1,2); canvas.width=innerWidth*d; canvas.height=innerHeight*d; gl.viewport(0,0,canvas.width,canvas.height); };
+  resize(); addEventListener('resize',resize);
+  function loop(ms){
+    gl.uniform2f(U.res,canvas.width,canvas.height);
+    gl.uniform1f(U.t,ms/1000);
+    gl.drawArrays(gl.TRIANGLES,0,3);
+    requestAnimationFrame(loop);
+  }
+}
+startWallpaper();
+
+/* ---------- start ---------- */
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(reduce){ intro.style.display='none'; document.getElementById('site').classList.add('ready'); }
+else {
+  (document.fonts&&document.fonts.load?document.fonts.load('600 100px Fredoka').catch(()=>{}):Promise.resolve())
+    .then(()=>setTimeout(runIntro,150));
+}
+</script>
+</body>
+</html>
